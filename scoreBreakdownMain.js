@@ -33,12 +33,18 @@ hitlessLossSound.volume = .1;
 function onMessage(e) {
   const event = JSON.parse(e.data);
 
-  switch (event.type) {
+  switch (event.type || event.event) {
+    case "hello":
+      console.log(event);
+      handlePluginVersion(event.status);
+      return;
     case "sceneEvent":
       handleSceneEvent(event.status);
       return;
     case "TNHScoreEvent":
       handleScoreEvent(event.status);
+      break;
+    case "TNHTokenEvent":
       break;
     case "TNHPhaseEvent":
       handlePhaseEvent(event.status);
@@ -47,22 +53,19 @@ function onMessage(e) {
       handleHoldPhaseEvent(event.status);
       break;
     case "TNHLostStealthBonus":
-      eventLog.addItem("STEALTH BONUS LOST", "#f04");
+      eventLog.addItem("STEALTH BONUS LOST", "#f46");
 	  stealthLossSound.play();
       break;
     case "TNHLostNoHitBonus":
-      eventLog.addItem("NO HIT BONUS LOST", "#f04");
+      eventLog.addItem("NO HIT BONUS LOST", "#f46");
 	  hitlessLossSound.play();
       break;
-    case "playerDamage":
-    case "playerHeal":
-      healthBar.setHealth(event.status.health / event.status.maxHealth);
+    case "healthEvent":
+      if (event.status.health <= 0) healthBar.setHealth(0);
+      else healthBar.setHealth(event.status.health / event.status.maxHealth);
       break;
-    case "playerBuff":
+    case "buffEvent":
       handlePlayerBuff(event.status);
-      break;
-    case "playerKill":
-      healthBar.setHealth(0);
       break;
     case "ammoEvent":
       handleAmmoEvent(event.status);
@@ -70,6 +73,29 @@ function onMessage(e) {
     default:
       console.log(event);
       break;
+  }
+}
+
+function compareVersions(a, b) {
+  return a.localeCompare(b, undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
+function handlePluginVersion(event) {
+  const minSupportedVersion = "0.2.0";
+  if (compareVersions(event.version, minSupportedVersion) < 0) {
+    console.error(
+      "Unsupported mod version detected, please update H3Status\n",
+      `Current: ${event.version} Required: ${minSupportedVersion}+`,
+    );
+    eventLog.addItem("UNSUPPORTED MOD VERSION", "#f66", 30);
+    eventLog.addItem("PLEASE UPDATE H3STATUS", "#f66", 30);
+    // setTimeout(
+    //   () => clearInterval(eventLog.queueHandler),
+    //   globalConfig.eventLogDelay * 1000 * 4,
+    // );
   }
 }
 
@@ -91,6 +117,7 @@ function handleSceneEvent(event) {
       "TakeAndHoldClassic",
       "TakeAndHold_WinterWasteland",
       "Institution",
+      "TakeAndHoldDark",
     ].includes(event.name)
   ) {
     utils.set("#score-panel", { display: "initial" });
@@ -185,8 +212,9 @@ function handlePhaseEvent(event) {
         // eventLog.addItem(`RESUPPLY AT: ${event.supplyNames[0]}`, "#8cf", 10);
 		outputScorePhase("TAKE", event.level+1);
       }
+      const holdsRemaining = event.count - event.level;
       eventLog.addItem(
-        `${event.count - event.level} HOLDS REMAINING`,
+        `${holdsRemaining} HOLD${holdsRemaining > 1 ? "S" : ""} REMAINING`,
         "#8cf",
         10,
       );
@@ -608,7 +636,6 @@ class AmmoCounter {
       event.capacity > this.capacity ||
       event.roundType != this.roundType
     ) {
-      console.log("Resetting ammo counter");
       this.elements.length = 0;
       this.element.replaceChildren();
 
@@ -632,7 +659,7 @@ class AmmoCounter {
     }
 
     if (event.roundClass != this.roundClass) {
-      console.log("Updating ammo type");
+      // console.log("Updating ammo type");
       this.elements.forEach((el, i) => {
         el.src = AmmoCounter.getAmmoIcon(
           event.roundType,
