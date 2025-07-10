@@ -10,7 +10,7 @@ Custom overlay for [H3Status](https://github.com/TakingFire/H3Status/tree/main)
 
 ## Usage
 
-Place these files in the [`TNHScoreLog` folder from H3Status](https://github.com/TakingFire/H3Status/tree/main/Overlays/TNHScoreLog), as it uses the same assets as it.
+Place the folder containing files in the [`Overlays` folder from H3Status](https://github.com/TakingFire/H3Status/tree/main/Overlays). You must also have [`TNHScoreLog`](https://github.com/TakingFire/H3Status/tree/main/Overlays/TNHScoreLog) in the Overlays folder, as it uses the same assets.
 
 In OBS, set up a Browser with Local file set and `scoreBreakdown.html` as the Local file.
 
