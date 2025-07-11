@@ -15,6 +15,7 @@ function onMessage(e) {
 		break;
 	}
 }
+ws.onmessage = onMessage;
 
 const killCategories = ["KILL","HEADSHOT","MELEE","NECK SNAP","RIP & TEAR","MULTIKILL","STEALTH KILL"];
 function outputScorePhase(newPhaseType, newPhaseValue) {
@@ -87,6 +88,7 @@ function handlePhaseEvent(event) {
 			if (event.holdName) {
 				outputScorePhase("TAKE", event.level+1);
 			}
+			break;
 		}
 		case "Hold": {
 			outputScorePhase("HOLD", event.level+1);
