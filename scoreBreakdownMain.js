@@ -6,6 +6,7 @@ hitlessLossSound.volume = .1;
 // @override
 function onMessage(e) {
 	OLD_onMessage(e);
+	const event = JSON.parse(e.data);
 	switch (event.type || event.event) {
 	case "TNHLostStealthBonus":
 		stealthLossSound.play();
