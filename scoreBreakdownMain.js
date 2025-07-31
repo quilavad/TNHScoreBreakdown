@@ -1,7 +1,8 @@
-const stealthLossSound = new Audio('sounds/stealth_lost.mp3');
-stealthLossSound.volume = .3;
-const hitlessLossSound = new Audio('sounds/hitless_lost.mp3');
-hitlessLossSound.volume = .1;
+const sounds = {};
+sounds["stealth_lost"] = new Audio("sounds/stealth_lost.mp3");
+sounds["stealth_lost"].volume = .3;
+sounds["hitless_lost"] = new Audio("sounds/hitless_lost.mp3");
+sounds["hitless_lost"].volume = .1;
 
 // @override
 function onMessage(e) {
@@ -9,56 +10,54 @@ function onMessage(e) {
 	const event = JSON.parse(e.data);
 	switch (event.type || event.event) {
 	case "TNHLostStealthBonus":
-		stealthLossSound.play();
+		sounds["stealth_lost"].play();
 		break;
 	case "TNHLostNoHitBonus":
-		hitlessLossSound.play();
+		sounds["hitless_lost"].play();
 		break;
 	}
 }
 ws.onmessage = onMessage;
 
 const killCategories = ["KILL","HEADSHOT","MELEE","NECK SNAP","RIP & TEAR","MULTIKILL","STEALTH KILL"];
-function outputScorePhase(newPhaseType, newPhaseValue) {
-	if (phaseName[0] !== "START") {
-		var headerNum = 1;
-		switch (phaseName[0]) {
-			case "TAKE":
-				headerNum = 1;
-				break;
-			case "HOLD":
-				headerNum = 2;
-				break;
-			case "WAVE":
-				headerNum = 3;
-				break;
+const phaseToHeader = {"Take": 1, "Hold": 2, "Analyzing": 3};
+const phaseToOutput = {"Take": "TAKE", "Hold": "HOLD", "Analyzing": "WAVE"};
+function outputScorePhase(newPhase) {
+	if (currentPhase != null) {
+		let currentScoreWindow = scoreWindows[holdPhase - 1];
+		let header = "<h" + phaseToHeader[currentPhase.phase] + ">" + phaseToOutput[currentPhase.phase] +  " " + (currentPhase.level+1);
+		if (currentPhase.phase === "Take" && currentPhase.supplyNames) {
+			header += " - " + currentPhase.supplyNames;
+		} else if (currentPhase.phase === "Hold" && currentPhase.holdName) {
+			header += " - " + currentPhase.holdName;
 		}
-		scoreWindows[scoreWindowIndex].innerHTML += "<h" + headerNum + ">" + phaseName[0] +  " " + phaseName[1] + "</h" + headerNum + ">";
-		if (phaseName[0] !== "HOLD") {
-			var killScore = 0
+		header += "</h" + phaseToHeader[currentPhase.phase] + ">";
+		currentScoreWindow.innerHTML += header;
+		if (currentPhase.phase !== "Hold") {
+			let killScore = 0;
 			for (category in scoreTracker) {
 				if (category.indexOf("LONG SHOT") != -1 && !killCategories.includes(category)) {
 					killCategories.push(category);
 				}
 				if (!killCategories.includes(category)) {
-					scoreWindows[scoreWindowIndex].innerHTML += category + " (" + scoreTracker[category][1] + ") x " + scoreTracker[category][0] + "\n";
+					currentScoreWindow.innerHTML += category + " (" + scoreTracker[category][1] + ") x " + scoreTracker[category][0] + "\n";
 				}
 				else {
 					killScore += scoreTracker[category][0] * scoreTracker[category][1];
 				}
 			}
-			scoreWindows[scoreWindowIndex].innerHTML += "KILL TOTAL (" + killScore + ")\n";
+			currentScoreWindow.innerHTML += "KILL TOTAL (" + killScore + ")\n";
 			for (const category of killCategories) {
 				if (category in scoreTracker) {
-					scoreWindows[scoreWindowIndex].innerHTML += "\t" + category + " (" + scoreTracker[category][1] + ") x " + scoreTracker[category][0] + "\n";
+					currentScoreWindow.innerHTML += "\t" + category + " (" + scoreTracker[category][1] + ") x " + scoreTracker[category][0] + "\n";
 				}
 			}
 		}
 		scoreTracker = {};
 	}
-	phaseName = [newPhaseType, newPhaseValue];
-	if (newPhaseType === "TAKE") {
-		scoreWindowIndex = newPhaseValue - 1;
+	currentPhase = newPhase;
+	if (newPhase.phase === "Take") {
+		holdPhase = newPhase.level + 1;
 	}
 }
 
@@ -67,8 +66,8 @@ function outputScoreClear() {
 		scoreWindows[i].style.visibility = "hidden";
 		scoreWindows[i].innerHTML = "";
 	}
-	phaseName = ["START", 0]
-	scoreTracker = {}
+	currentPhase = null;
+	scoreTracker = {};
 }
 
 function outputScoreReveal() {
@@ -81,39 +80,27 @@ function outputScoreReveal() {
 function handlePhaseEvent(event) {
 	OLD_handlePhaseEvent(event);
 	switch (event.phase) {
-		case "Take": {
-			if (event.level > 0) {
-			} else {
+		case "Take": 
+			if (event.level == 0) {
 				outputScoreClear();
 			}
-			if (event.holdName) {
-				outputScorePhase("TAKE", event.level+1);
-			}
+			//no break by design
+		case "Hold": 
+			outputScorePhase(event);
 			break;
-		}
-		case "Hold": {
-			outputScorePhase("HOLD", event.level+1);
-			break;
-		}
-		case "Completed": {
-			outputScorePhase("COMPLETE",0);
+		case "Completed": 
+		case "Dead":
+			outputScorePhase(event);
 			outputScoreReveal();
 			break;
-		}
-		case "Dead": {
-			outputScorePhase("DEAD",0);
-			outputScoreReveal();
-			break;
-			}
-		}
+	}
 }
 
 // @override
 function handleHoldPhaseEvent(event) {
 	OLD_handleHoldPhaseEvent(event);
 	if (event.phase == "Analyzing") {
-		phaseBar.setColor(currentHoldPhaseIndex, "#fc0");
-		outputScorePhase("WAVE", event.level+1);
+		outputScorePhase(event);
 	}
 }
 
@@ -174,11 +161,10 @@ AmmoCounter.getAmmoIcon = function(roundType, roundClass, spent) {
 	return "../TNHScoreLog/" + OLD_getAmmoIcon(roundType, roundClass, spent);
 }
 
-var scoreTracker = {};
+let scoreTracker = {};
 const scoreWindows = [];
 for (let i = 0; i < 5; i++) {
 	scoreWindows[i] = document.getElementById("score-window-"+(i+1));
 }
-var scoreWindowIndex = 0;
-var phaseName = ["START",0];
-
+let holdPhase = 0;
+let currentPhase = null;
