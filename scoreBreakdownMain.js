@@ -62,8 +62,11 @@ function outputScorePhase(newPhase) {
 }
 
 function outputScoreClear() {
+	if (globalConfig.scoreBreakdownStartHidden)
+		outputScoreHide();
+	else
+		outputScoreReveal();
 	for (let i = 0; i < 5; i++) {
-		scoreWindows[i].style.visibility = "hidden";
 		scoreWindows[i].innerHTML = "";
 	}
 	currentPhase = null;
@@ -73,6 +76,12 @@ function outputScoreClear() {
 function outputScoreReveal() {
 	for (let i = 0; i < 5; i++) {
 		scoreWindows[i].style.visibility = "visible";
+	}
+}
+
+function outputScoreHide() {
+	for (let i = 0; i < 5; i++) {
+		scoreWindows[i].style.visibility = "hidden";
 	}
 }
 
@@ -165,6 +174,16 @@ let scoreTracker = {};
 const scoreWindows = [];
 for (let i = 0; i < 5; i++) {
 	scoreWindows[i] = document.getElementById("score-window-"+(i+1));
+	if (globalConfig.scoreBreakdownStartHidden) {
+		scoreWindows[i].style.visibility = "hidden";
+	}
 }
 let holdPhase = 0;
 let currentPhase = null;
+
+document.querySelector("body").addEventListener("click", () => {
+	if (scoreWindows[0].style.visibility === "hidden")
+		outputScoreReveal();
+	else
+		outputScoreHide();
+});

@@ -21,6 +21,12 @@ Your file structure should look something like this: <br>
 `│  ├─ TNHScoreBreakdown/` <br>
 `│  │  ├─ scoreBreakdown.html`
 
-In OBS, set up a Browser with Local file set and `scoreBreakdown.html` as the Local file.
+In OBS, set up a Browser Source with Local file set and `scoreBreakdown.html` as the Local file.
 
 Set the Width and Height to the size of the Video Output Resolution.
+
+Clicking anywhere on the page toggles the visibility of the breakdown. This can be done in OBS by selecting the Browser  Source, clicking Interact, then clicking near the center the popup.
+
+## Configuring
+
+This overlay has its own `config.js` file seperate from `TNHScoreLog`'s, with all the same options, as well as an option to have the breakdown hidden or visible at the start of a run. By default, it starts hidden.

@@ -20,4 +20,6 @@ const globalConfig = {
 
   showWeaponName: true,
   showAmmoCounter: true,
+  
+  scoreBreakdownStartHidden: true,
 };
