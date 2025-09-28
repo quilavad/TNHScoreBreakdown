@@ -29,4 +29,7 @@ Clicking anywhere on the page toggles the visibility of the breakdown. This can 
 
 ## Configuring
 
-This overlay has its own `config.js` file seperate from `TNHScoreLog`'s, with all the same options, as well as an option to have the breakdown hidden or visible at the start of a run. By default, it starts hidden.
+This overlay has its own `config.js` file seperate from `TNHScoreLog`'s, with all the same options in addition to some new ones.
+The score breakdown can configured to be hidden or visible at the start of a run. By default, it starts hidden.
+Custom hold names can be set for levels without official names.
+The stealth and hitless bonus lost alert sounds can also be customized.

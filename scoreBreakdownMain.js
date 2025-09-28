@@ -1,9 +1,3 @@
-const sounds = {};
-sounds["stealth_lost"] = new Audio("sounds/stealth_lost.mp3");
-sounds["stealth_lost"].volume = .3;
-sounds["hitless_lost"] = new Audio("sounds/hitless_lost.mp3");
-sounds["hitless_lost"].volume = .1;
-
 // @override
 function onMessage(e) {
 	OLD_onMessage(e);
@@ -19,70 +13,11 @@ function onMessage(e) {
 }
 ws.onmessage = onMessage;
 
-const killCategories = ["KILL","HEADSHOT","MELEE","NECK SNAP","RIP & TEAR","MULTIKILL","STEALTH KILL"];
-const phaseToHeader = {"Take": 1, "Hold": 2, "Analyzing": 3};
-const phaseToOutput = {"Take": "TAKE", "Hold": "HOLD", "Analyzing": "WAVE"};
-function outputScorePhase(newPhase) {
-	if (currentPhase != null) {
-		let currentScoreWindow = scoreWindows[holdPhase - 1];
-		let header = "<h" + phaseToHeader[currentPhase.phase] + ">" + phaseToOutput[currentPhase.phase] +  " " + (currentPhase.level+1);
-		if (currentPhase.phase === "Take" && currentPhase.supplyNames) {
-			header += " - " + currentPhase.supplyNames;
-		} else if (currentPhase.phase === "Hold" && currentPhase.holdName) {
-			header += " - " + currentPhase.holdName;
-		}
-		header += "</h" + phaseToHeader[currentPhase.phase] + ">";
-		currentScoreWindow.innerHTML += header;
-		if (currentPhase.phase !== "Hold") {
-			let killScore = 0;
-			for (category in scoreTracker) {
-				if (category.indexOf("LONG SHOT") != -1 && !killCategories.includes(category)) {
-					killCategories.push(category);
-				}
-				if (!killCategories.includes(category)) {
-					currentScoreWindow.innerHTML += category + " (" + scoreTracker[category][1] + ") x " + scoreTracker[category][0] + "\n";
-				}
-				else {
-					killScore += scoreTracker[category][0] * scoreTracker[category][1];
-				}
-			}
-			currentScoreWindow.innerHTML += "KILL TOTAL (" + killScore + ")\n";
-			for (const category of killCategories) {
-				if (category in scoreTracker) {
-					currentScoreWindow.innerHTML += "\t" + category + " (" + scoreTracker[category][1] + ") x " + scoreTracker[category][0] + "\n";
-				}
-			}
-		}
-		scoreTracker = {};
-	}
-	currentPhase = newPhase;
-	if (newPhase.phase === "Take") {
-		holdPhase = newPhase.level + 1;
-	}
-}
-
-function outputScoreClear() {
-	if (globalConfig.scoreBreakdownStartHidden)
-		outputScoreHide();
-	else
-		outputScoreReveal();
-	for (let i = 0; i < 5; i++) {
-		scoreWindows[i].innerHTML = "";
-	}
-	currentPhase = null;
-	scoreTracker = {};
-}
-
-function outputScoreReveal() {
-	for (let i = 0; i < 5; i++) {
-		scoreWindows[i].style.visibility = "visible";
-	}
-}
-
-function outputScoreHide() {
-	for (let i = 0; i < 5; i++) {
-		scoreWindows[i].style.visibility = "hidden";
-	}
+// @override
+function handleSceneEvent(event) {
+	OLD_handleSceneEvent(event);
+	sceneName = event.name;
+	outputScoreClear();
 }
 
 // @override
@@ -90,9 +25,9 @@ function handlePhaseEvent(event) {
 	OLD_handlePhaseEvent(event);
 	switch (event.phase) {
 		case "Take": 
-			if (event.level == 0) {
+			/*if (event.level == 0) {
 				outputScoreClear();
-			}
+			}*/
 			//no break by design
 		case "Hold": 
 			outputScorePhase(event);
@@ -170,6 +105,87 @@ AmmoCounter.getAmmoIcon = function(roundType, roundClass, spent) {
 	return "../TNHScoreLog/" + OLD_getAmmoIcon(roundType, roundClass, spent);
 }
 
+const killCategories = ["KILL","HEADSHOT","MELEE","NECK SNAP","RIP & TEAR","MULTIKILL","STEALTH KILL"];
+const phaseToHeader = {"Take": 1, "Hold": 2, "Analyzing": 3};
+const phaseToOutput = {"Take": "TAKE", "Hold": "HOLD", "Analyzing": "WAVE"};
+
+function outputScorePhase(newPhase) {
+	if (currentPhase != null) {
+		let currentScoreWindow = scoreWindows[holdPhase - 1];
+		let header = "<h" + phaseToHeader[currentPhase.phase] + ">" + phaseToOutput[currentPhase.phase] +  " " + (currentPhase.level+1);
+		
+		if (currentPhase.phase === "Take") {
+			if (currentPhase.supplyNames) {
+				header += " - " + currentPhase.supplyNames;
+			} else {
+				header += " - SUPPLY " + currentPhase.supply.join(", ");
+			}
+		} else if (currentPhase.phase === "Hold") {
+			if (currentPhase.holdName) {
+				header += " - " + currentPhase.holdName;
+			} else if (sceneName in customHoldNames) {
+				header += " - " + customHoldNames[sceneName][currentPhase.hold];
+			}
+		}
+		header += "</h" + phaseToHeader[currentPhase.phase] + ">";
+		currentScoreWindow.innerHTML += header;
+		
+		if (currentPhase.phase !== "Hold") {
+			let killScore = 0;
+			for (category in scoreTracker) {
+				if (category.indexOf("LONG SHOT") != -1 && !killCategories.includes(category)) {
+					killCategories.push(category);
+				}
+				if (!killCategories.includes(category)) {
+					currentScoreWindow.innerHTML += category + " (" + scoreTracker[category][1] + ")";
+					if (scoreTracker[category][0] != 1) {
+						currentScoreWindow.innerHTML += "x " + scoreTracker[category][0];
+					}
+					currentScoreWindow.innerHTML += "\n";
+				}
+				else {
+					killScore += scoreTracker[category][0] * scoreTracker[category][1];
+				}
+			}
+			currentScoreWindow.innerHTML += "KILL TOTAL (" + killScore + ")\n";
+			for (const category of killCategories) {
+				if (category in scoreTracker) {
+					currentScoreWindow.innerHTML += "\t" + category + " (" + scoreTracker[category][1] + ") x " + scoreTracker[category][0] + "\n";
+				}
+			}
+		}
+		scoreTracker = {};
+	}
+	currentPhase = newPhase;
+	if (newPhase.phase === "Take") {
+		holdPhase = newPhase.level + 1;
+	}
+}
+
+function outputScoreClear() {
+	if (globalConfig.scoreBreakdownStartHidden)
+		outputScoreHide();
+	else
+		outputScoreReveal();
+	for (let i = 0; i < 5; i++) {
+		scoreWindows[i].innerHTML = "";
+	}
+	currentPhase = null;
+	scoreTracker = {};
+}
+
+function outputScoreReveal() {
+	for (let i = 0; i < 5; i++) {
+		scoreWindows[i].style.visibility = "visible";
+	}
+}
+
+function outputScoreHide() {
+	for (let i = 0; i < 5; i++) {
+		scoreWindows[i].style.visibility = "hidden";
+	}
+}
+
 let scoreTracker = {};
 const scoreWindows = [];
 for (let i = 0; i < 5; i++) {
@@ -180,6 +196,7 @@ for (let i = 0; i < 5; i++) {
 }
 let holdPhase = 0;
 let currentPhase = null;
+let sceneName = null;
 
 document.querySelector("body").addEventListener("click", () => {
 	if (scoreWindows[0].style.visibility === "hidden")

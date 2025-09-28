@@ -23,3 +23,13 @@ const globalConfig = {
   
   scoreBreakdownStartHidden: true,
 };
+
+const customHoldNames = {"TakeAndHoldClassic": ["RED HALL", "ORANGE MEZZANINE", "GOLD CELLAR", "GREEN PLATFORMS", "TEAL SQUARE", "CYAN STAIRS", "INDIGO PILLARS", "PURPLE STAIRS", "BLUE HALLWAY", "YELLOW HALLWAY", "T HALLWAY", "J HALLWAY", "L HALLWAY"],
+"TakeAndHold_WinterWasteland" : ["DEPOT", "SNIPER TOWER", "BASE", "ROCKS", "CHECKPOINT", "BARRACKS", "HANGER", "OUTLOOK", "SHIPMENT", "SILO", "RIDGE", "AIRFIELD", "PLATEAU", "HIGH GROUND", "ARTILLERY", "FORT", "ENCAMPMENT", "SPINE", "PINNED", "STATION", "L LOOKOUT", "SHELTER", "BRIDGES", "RUINS", "KING OF THE HILL", "HELIPORT", "BOWL", "STRONGHOLD", "OLD TOWN", "SPIRAL ", "DEFENCES", "TUNNEL EXIT"]};
+customHoldNames["TakeAndHoldDark"] = customHoldNames["TakeAndHoldClassic"];
+
+const sounds = {};
+sounds["stealth_lost"] = new Audio("sounds/stealth_lost.mp3");
+sounds["stealth_lost"].volume = .3;
+sounds["hitless_lost"] = new Audio("sounds/hitless_lost.mp3");
+sounds["hitless_lost"].volume = .1;

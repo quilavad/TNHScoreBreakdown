@@ -1,19 +1,18 @@
-h1 {
+h1, h2, h3 {
 	font-size: var(--log-size);
     font-weight: 600;
+}
+
+h1 {
 	color: #46c3cd;
 }
 
 h2 {
-	font-size: var(--log-size);
-    font-weight: 600;
-	color:#ea4335;
+	color: #ea4335;
 }
 
 h3 {
-	font-size: var(--log-size);
-    font-weight: 600;
-	color:#44e744;
+	color: #44e744;
 }
 
 #score-window {
