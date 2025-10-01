@@ -114,18 +114,24 @@ function outputScorePhase(newPhase) {
 		let currentScoreWindow = scoreWindows[holdPhase - 1];
 		let header = "<h" + phaseToHeader[currentPhase.phase] + ">" + phaseToOutput[currentPhase.phase] +  " " + (currentPhase.level+1);
 		
-		if (currentPhase.phase === "Take") {
-			if (currentPhase.supplyNames) {
-				header += " - " + currentPhase.supplyNames;
-			} else {
-				header += " - SUPPLY " + currentPhase.supply.join(", ");
-			}
-		} else if (currentPhase.phase === "Hold") {
-			if (currentPhase.holdName) {
-				header += " - " + currentPhase.holdName;
-			} else if (sceneName in customHoldNames) {
-				header += " - " + customHoldNames[sceneName][currentPhase.hold];
-			}
+		switch (currentPhase.phase) {
+			case "Take":
+				if (currentPhase.supplyNames) {
+					header += " - " + currentPhase.supplyNames;
+				} else {
+					header += " - SUPPLY " + currentPhase.supply.join(", ");
+				}
+				break;
+			case "Hold":
+				if (currentPhase.holdName) {
+					header += " - " + currentPhase.holdName;
+				} else if (sceneName in customHoldNames) {
+					header += " - " + customHoldNames[sceneName][currentPhase.hold];
+				}
+				break;
+			case "Analyzing":
+				header += " - " + currentPhase.encryptionType.toUpperCase() + " x " + currentPhase.encryptionCount;
+				break;
 		}
 		header += "</h" + phaseToHeader[currentPhase.phase] + ">";
 		currentScoreWindow.innerHTML += header;
@@ -133,13 +139,13 @@ function outputScorePhase(newPhase) {
 		if (currentPhase.phase !== "Hold") {
 			let killScore = 0;
 			for (category in scoreTracker) {
-				if (category.indexOf("LONG SHOT") != -1 && !killCategories.includes(category)) {
+				if (category.substring(0,9) === "LONG SHOT" && !killCategories.includes(category)) {
 					killCategories.push(category);
 				}
 				if (!killCategories.includes(category)) {
 					currentScoreWindow.innerHTML += category + " (" + scoreTracker[category][1] + ")";
 					if (scoreTracker[category][0] != 1) {
-						currentScoreWindow.innerHTML += "x " + scoreTracker[category][0];
+						currentScoreWindow.innerHTML += " x " + scoreTracker[category][0];
 					}
 					currentScoreWindow.innerHTML += "\n";
 				}
@@ -194,7 +200,7 @@ for (let i = 0; i < 5; i++) {
 		scoreWindows[i].style.visibility = "hidden";
 	}
 }
-let holdPhase = 0;
+let holdPhase = 1;
 let currentPhase = null;
 let sceneName = null;
 
