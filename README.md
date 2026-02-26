@@ -4,7 +4,7 @@ Custom overlay for [H3Status](https://github.com/TakingFire/H3Status/tree/main)
 
 - Displays a breakdown of the score for Take & Hold upon run completion
 
-- Plays a sound when the stealth or hitless bonus is lost
+- Plays a sound when the first hold guard of each Take phase is killed
 
 - Maintains the features from the base TNHScoreLog
 
@@ -40,4 +40,4 @@ Clicking anywhere on the page toggles the visibility of the breakdown. This can 
 This overlay has its own `config.js` file seperate from `TNHScoreLog`'s, with all the same options in addition to some new ones.
 The score breakdown can configured to be hidden or visible at the start of a run. By default, it starts hidden.
 Custom hold names can be set for levels without official names.
-The stealth and hitless bonus lost alert sounds can also be customized.
+The first guard killed sound can also be customized.
