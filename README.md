@@ -10,7 +10,7 @@ Custom overlay for [H3Status](https://github.com/TakingFire/H3Status/tree/main)
 
 ## Setup
 
-In OBS, set up a Browser Source with Local file unchecked and `https://quilavad.github.io/scoreBreakdown_u120e10.html` as the Local file.
+In OBS, set up a Browser Source with Local file unchecked and `https://quilavad.github.io/scoreBreakdown_u120e10.html` as the URL.
 
 Set the Width and Height to the size of the Video Output Resolution.
 
