@@ -1,17 +1,17 @@
-/* // @override
-function onMessage(e) {
+ // @override
+/*function onMessage(e) {
 	OLD_onMessage(e);
 	const event = JSON.parse(e.data);
 	switch (event.type || event.event) {
-	case "TNHLostStealthBonus":
-		sounds["stealth_lost"].play();
-		break;
-	case "TNHLostNoHitBonus":
-		sounds["hitless_lost"].play();
-		break;
+        case "TNHLostStealthBonus":
+            sounds["stealth_lost"].play();
+            break;
+        case "TNHLostNoHitBonus":
+            sounds["hitless_lost"].play();
+            break;
 	}
-}
-ws.onmessage = onMessage;*/
+}*/
+ws.onmessage = onMessage;
 
 // @override
 function handleSceneEvent(event) {
@@ -122,7 +122,7 @@ const phaseToHeader = {"Take": 1, "Hold": 2, "Analyzing": 3};
 const phaseToOutput = {"Take": "TAKE", "Hold": "HOLD", "Analyzing": "WAVE"};
 
 function outputScorePhase(newPhase) {
-	if (currentPhase != null) {
+	if (currentPhase != null && holdPhase <= 5) {
 		let currentScoreWindow = scoreWindows[holdPhase - 1];
 		let header = "<h" + phaseToHeader[currentPhase.phase] + ">" + phaseToOutput[currentPhase.phase] +  " " + (currentPhase.level+1);
 		
