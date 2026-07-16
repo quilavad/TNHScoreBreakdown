@@ -1,4 +1,5 @@
 const globalConfig = {
+  webSocketAddress: "localhost",
   webSocketPort: 9504,
   overlayScale: 1,
 
