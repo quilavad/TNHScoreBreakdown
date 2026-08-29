@@ -63,10 +63,6 @@ function handleScoreEvent(event) {
 	else {
 		scoreTracker[getEventString(event)] = [1,event.value * event.mult];
 	}
-	if (currentPhase.phase === "Take" && !firstGuardKilled && getEventString(event) === "KILL") {
-		sounds["stealth_lost"].play();
-		firstGuardKilled = true;
-	}
 }
 
 // @override
